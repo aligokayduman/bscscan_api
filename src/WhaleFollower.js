@@ -193,7 +193,7 @@ export default function WhaleFollower() {
 
   const getPancakeTransfer = () => {
     //console.log("Holders Count: "+Holders.length);
-    let holder = Holders[Holders.length - 1];
+    let holder = Holders[0];
     const url = 'https://api.bscscan.com/api?module=account&action=txlist&address=' + holder["address"] + '&startblock=' + holder["blocknumber"] + '&endblock=99999999&page=1&offset=25&sort=desc&apikey=' + BSC_API_KEY;
     fetch(url)
       .then(res => res.json())
@@ -223,13 +223,13 @@ export default function WhaleFollower() {
         console.log('There was an error : ' + err);
       });
 
-    Holders.pop();
+    Holders.shift();
 
   }
 
   const getContracts = () => {
     //console.log("Hash Count: "+Hashs.length);
-    let hash = Hashs[Hashs.length - 1];
+    let hash = Hashs[0];
     const url = 'https://api.bscscan.com/api?module=proxy&action=eth_getTransactionReceipt&txhash=' + hash["hash"] + '&apikey=' + BSC_API_KEY;
     fetch(url)
       .then(res => res.json())
@@ -255,12 +255,12 @@ export default function WhaleFollower() {
         console.log('There was an error : ' + err);
       });
 
-    Hashs.pop();
+    Hashs.shift();
   }
 
   const getTokenName = () => {
     //console.log("Contracts Count: "+Contracts.length);
-    let contract = Contracts[Contracts.length - 1];
+    let contract = Contracts[0];
     const url = 'https://api.pancakeswap.info/api/v2/tokens/'+contract["address"];
     fetch(url)
       .then(res => res.json())
@@ -289,7 +289,7 @@ export default function WhaleFollower() {
         console.log('There was an error : ' + err);
       });
 
-    Contracts.pop();
+    Contracts.shift();
   }
 
   return (
