@@ -92,7 +92,7 @@ export default function WhaleFollower() {
   useEffect(() => {
     console.log("intHash kuruldu");
     let intHash = setInterval(() => {
-      if (Hashs.length > 0) getContracts();
+      if (Hashs.length > 0 && Holders.length === 0) getContracts();
     }, 300)
 
     return () => {
@@ -104,7 +104,7 @@ export default function WhaleFollower() {
   useEffect(() => {
     console.log("intToken kuruldu");
     let intToken = setInterval(() => {
-      if (Contracts.length > 0) getTokenName();
+      if (Contracts.length > 0  && Holders.length === 0 && Hashs.length === 0) getTokenName();
     }, 300)
 
     return () => {
@@ -268,15 +268,16 @@ export default function WhaleFollower() {
         (res) => {
           if (typeof res === 'object' && res !== null) {
             if(typeof res.data != "undefined"){
-              const name = (res.data.name !== 'unknown') ? res.data.name : 'unknown('+contract["address"]+')';
-              const valuebnb = contract["value"] / 10 ** 18;
-              const valuedollar = Math.round(valuebnb * BnbPrice * 100) / 100;
-              console.log(contract["blocknumber"] + " - " + contract["holderaddress"] + " - " + name + " - " + valuebnb + "(BNB)");
+              const name = (res.data.name !== 'unknown') ? res.data.name :'unknown('+contract["address"]+')';
+              let valuebnb = contract["value"] / 10 ** 18;
+              valuebnb = Math.round(valuebnb * 100) / 100;
+              console.log('BlockNumber='+contract["blocknumber"] + " | HolderAddress=" + contract["holderaddress"] + " | TokenName=" + name + " | Value=" + valuebnb + " (BNB)");
               const now = new Date();
-              const value = { name: name, value: valuebnb, time: now.getHours()+":"+now.getMinutes()+":"+now.getSeconds()};
+              const time = now.getHours()+":"+now.getMinutes()+":"+now.getSeconds();
+              const token = { name: name, value: valuebnb , time: time, address: contract["address"]};
               setTokens(Tokens => ({
                 ...Tokens,
-                [key]: value
+                [key]: token
               }));
               key++;
             }
@@ -321,7 +322,7 @@ export default function WhaleFollower() {
 
             Object.keys(Tokens).reverse().map(key =>
               <ListItem key={key}>
-                <ListItemText primary={Tokens[key].time+" - "+Tokens[key].name + " - " + Tokens[key].value + "(BNB)"} />
+                <ListItemText><a href={'https://poocoin.app/tokens/'+Tokens[key].address} target="_blank">{Tokens[key].time+" - "+Tokens[key].name + " - " + Tokens[key].value + " (BNB)"}</a></ListItemText>
               </ListItem>
             )
           }
