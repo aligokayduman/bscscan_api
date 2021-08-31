@@ -15,13 +15,11 @@ import Paper from '@material-ui/core/Paper';
 const useStyles = makeStyles((theme) => ({
   root: {
     '& > *': {
-      margin: theme.spacing(1),
-      width: '96%',
+      width: '96%'
     },
     flexGrow: 1,
   },
   paper: {
-    padding: theme.spacing(2),
     textAlign: 'center',
     color: theme.palette.text.secondary,
   },
@@ -38,6 +36,8 @@ let lastBlock = 1;
 let Holders = [];
 let Hashs = [];
 let Contracts = [];
+let HolderPool = [];
+let TokenPool = [];
 let key = 0;
 export default function WhaleFollower() {
   const classes = useStyles();
@@ -104,7 +104,7 @@ export default function WhaleFollower() {
   useEffect(() => {
     console.log("intToken kuruldu");
     let intToken = setInterval(() => {
-      if (Contracts.length > 0  && Holders.length === 0 && Hashs.length === 0) getTokenName();
+      if (Contracts.length > 0 && Holders.length === 0 && Hashs.length === 0) getTokenName();
     }, 300)
 
     return () => {
@@ -178,6 +178,7 @@ export default function WhaleFollower() {
                 holder["address"] = trn.to;
                 holder["blocknumber"] = trn.blockNumber;
                 if (Holders.findIndex(i => i.address === trn.to) < 0) Holders.push(holder);
+                if (HolderPool.findIndex(i => i === trn.to) < 0) HolderPool.push(trn.to);
                 lastBlock = (trn.blockNumber > lastBlock) ? trn.blockNumber : lastBlock;
               }
             });
@@ -206,11 +207,15 @@ export default function WhaleFollower() {
               hash["value"] = '';
               hash["holderaddress"] = '';
               hash["blocknumber"] = holder["blocknumber"];
+              hash["time"] = '';
               if (trn.from.toLowerCase() === holder["address"].toLowerCase() && trn.to.toLowerCase() === PancakeAddress.toLowerCase() && trn.txreceipt_status === "1" && trn.isError === "0" && trn.input !== "0x" && trn.value !== "0" && hash["hash"] === '') {
                 hash["hash"] = trn.hash;
                 hash["value"] = trn.value;
                 hash["holderaddress"] = holder["address"];
                 hash["blocknumber"] = holder["blocknumber"];
+                let time = new Date(parseInt(trn.timeStamp)*100);
+                time = time.getHours() + ":" + time.getMinutes() + ":" + time.getSeconds();
+                hash["time"] = time;
                 Hashs.push(hash);
               }
             });
@@ -237,12 +242,13 @@ export default function WhaleFollower() {
         (res) => {
           if (typeof res === 'object' && res !== null) {
             if (Array.isArray(res.result.logs)) {
-              if(res.result.logs.length > 2){
+              if (res.result.logs.length > 2) {
                 let contract = {};
                 contract["address"] = res.result.logs[2].address;
                 contract["value"] = hash["value"];
                 contract["holderaddress"] = hash["holderaddress"];
                 contract["blocknumber"] = hash["blocknumber"];
+                contract["time"] = hash["time"];
                 Contracts.push(contract);
               }
             }
@@ -261,20 +267,32 @@ export default function WhaleFollower() {
   const getTokenName = () => {
     //console.log("Contracts Count: "+Contracts.length);
     let contract = Contracts[0];
-    const url = 'https://api.pancakeswap.info/api/v2/tokens/'+contract["address"];
+    const url = 'https://api.pancakeswap.info/api/v2/tokens/' + contract["address"];
     fetch(url)
       .then(res => res.json())
       .then(
         (res) => {
           if (typeof res === 'object' && res !== null) {
-            if(typeof res.data != "undefined"){
-              const name = (res.data.name !== 'unknown') ? res.data.name :'unknown('+contract["address"]+')';
+            if (typeof res.data != "undefined") {
+              const name = (res.data.name !== 'unknown') ? res.data.name : 'unknown(' + contract["address"] + ')';
               let valuebnb = contract["value"] / 10 ** 18;
               valuebnb = Math.round(valuebnb * 100) / 100;
-              console.log('BlockNumber='+contract["blocknumber"] + " | HolderAddress=" + contract["holderaddress"] + " | TokenName=" + name + " | Value=" + valuebnb + " (BNB)");
-              const now = new Date();
-              const time = now.getHours()+":"+now.getMinutes()+":"+now.getSeconds();
-              const token = { name: name, value: valuebnb , time: time, address: contract["address"]};
+              let index = HolderPool.findIndex(i => i === contract["holderaddress"]);
+              const order = ( index < 0) ? '?.Holder' : index + '. Holder';
+
+              console.log('BlockNumber=' + contract["blocknumber"] + " | HolderAddress=" + contract["holderaddress"] +" Order="+index+" | Time=" + contract["time"] + " | TokenName=" + name + " | Value=" + valuebnb + " (BNB)");
+              const token = { name: name, value: valuebnb, time: contract["time"], address: contract["address"], holder: order };
+
+              index = TokenPool.findIndex(i => i.address === contract["address"]); 
+              if (index > 0) {
+                const currenttoken = { name: name, total: TokenPool[index].total + valuebnb, address: contract["address"] }
+                TokenPool[index] = currenttoken;
+              } else {
+                const newtoken = { name: name, total: valuebnb, address: contract["address"] }
+                TokenPool.push(newtoken);
+              }
+              TokenPool.sort(compare);
+
               setTokens(Tokens => ({
                 ...Tokens,
                 [key]: token
@@ -291,6 +309,16 @@ export default function WhaleFollower() {
       });
 
     Contracts.shift();
+  }
+
+  function compare(a, b) {
+    if (a.total < b.total) {
+      return -1;
+    }
+    if (a.total > b.total) {
+      return 1;
+    }
+    return 0;
   }
 
   return (
@@ -314,19 +342,42 @@ export default function WhaleFollower() {
         </form>
       </Container>
       <Container maxWidth={false}>
-        <Paper style={{visibility:'hidden'}}>LastBlock = {lastBlock}</Paper>
+        <Paper style={{ visibility: 'hidden' }}>LastBlock = {lastBlock}</Paper>
       </Container>
       <Container maxWidth={false}>
-        <List component="nav" className={classes.root} aria-label="token transactions">
-          {
+        <Grid container className={classes.root}>
 
-            Object.keys(Tokens).reverse().map(key =>
-              <ListItem key={key}>
-                <ListItemText><a href={'https://poocoin.app/tokens/'+Tokens[key].address} target="_blank">{Tokens[key].time+" - "+Tokens[key].name + " - " + Tokens[key].value + " (BNB)"}</a></ListItemText>
-              </ListItem>
-            )
-          }
-        </List>
+          <Grid item xs={12} md={6} lg={6}>
+            <Grid container>
+              <List component="nav" className={classes.root} aria-label="token transactions">
+                <ListItemText>--- History ---</ListItemText>
+                {
+                  Object.keys(Tokens).reverse().map(key =>
+                    <ListItem key={key}>
+                      <ListItemText><a href={'https://poocoin.app/tokens/' + Tokens[key].address} target="_blank">{Tokens[key].time + " - " + Tokens[key].holder + " - " + Tokens[key].name + " - " + Tokens[key].value + " (BNB)"}</a></ListItemText>
+                    </ListItem>
+                  )
+                }
+              </List>
+            </Grid>
+          </Grid>
+
+          <Grid item xs={12} md={6} lg={6}>
+            <Grid container>
+              <List component="nav" className={classes.root} aria-label="token transactions">
+                <ListItemText>--- Totals ---</ListItemText>
+                {
+                  Object.keys(TokenPool).reverse().map(key =>
+                    <ListItem key={key}>
+                      <ListItemText><a href={'https://poocoin.app/tokens/' + TokenPool[key].address} target="_blank">{TokenPool[key].name + " - " + TokenPool[key].total + " (BNB)"}</a></ListItemText>
+                    </ListItem>
+                  )
+                }
+              </List>
+            </Grid>
+          </Grid>
+
+        </Grid>
       </Container>
     </React.Fragment>
   );
