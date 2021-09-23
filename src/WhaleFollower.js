@@ -1,34 +1,18 @@
 import TextField from '@material-ui/core/TextField';
-import { makeStyles } from '@material-ui/core/styles';
+import { makeStyles, useTheme  } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import React, { useEffect, useState } from 'react';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import Container from '@material-ui/core/Container';
 import ListItemText from '@material-ui/core/ListItemText';
-import { BSC_API_KEY, firebaseConfig, PancakeAddress } from './Config';
-import firebase from 'firebase/app';
+import { BSC_API_KEY, PancakeAddress } from './Config';
 import Paper from '@material-ui/core/Paper';
 
-//firebase.initializeApp(firebaseConfig);
-
-const useStyles = makeStyles((theme) => ({
-  root: {
-    '& > *': {
-      width: '96%'
-    },
-    flexGrow: 1,
-  },
-  paper: {
-    textAlign: 'center',
-    color: theme.palette.text.secondary,
-  },
-  listbuy: {
-    color: 'green'
-  },
-  listsell: {
-    color: 'red'
-  }
+const useStyles = makeStyles((theme) =>({
+  root: theme.root,
+  link: theme.link,  
+  paper: theme.paper
 }));
 
 console.log("WhaleFollower.js başlangıç");
@@ -284,7 +268,7 @@ export default function WhaleFollower() {
               const token = { name: name, value: valuebnb, time: contract["time"], address: contract["address"], holder: order };
 
               index = TokenPool.findIndex(i => i.address === contract["address"]); 
-              if (index > 0) {
+              if (index > -1) {
                 const currenttoken = { name: name, total: TokenPool[index].total + valuebnb, address: contract["address"] }
                 TokenPool[index] = currenttoken;
               } else {
@@ -354,7 +338,7 @@ export default function WhaleFollower() {
                 {
                   Object.keys(Tokens).reverse().map(key =>
                     <ListItem key={key}>
-                      <ListItemText><a href={'https://poocoin.app/tokens/' + Tokens[key].address} target="_blank">{Tokens[key].time + " - " + Tokens[key].holder + " - " + Tokens[key].name + " - " + Tokens[key].value + " (BNB)"}</a></ListItemText>
+                      <ListItemText><a href={'https://poocoin.app/tokens/' + Tokens[key].address} target="_blank" className={classes.link}>{Tokens[key].time + " - " + Tokens[key].holder + " - " + Tokens[key].name + " - " + Tokens[key].value + " (BNB)"}</a></ListItemText>
                     </ListItem>
                   )
                 }
@@ -369,7 +353,7 @@ export default function WhaleFollower() {
                 {
                   Object.keys(TokenPool).reverse().map(key =>
                     <ListItem key={key}>
-                      <ListItemText><a href={'https://poocoin.app/tokens/' + TokenPool[key].address} target="_blank">{TokenPool[key].name + " - " + TokenPool[key].total + " (BNB)"}</a></ListItemText>
+                      <ListItemText><a href={'https://poocoin.app/tokens/' + TokenPool[key].address} target="_blank" className={classes.link}>{TokenPool[key].name + " - " + TokenPool[key].total + " (BNB)"}</a></ListItemText>
                     </ListItem>
                   )
                 }

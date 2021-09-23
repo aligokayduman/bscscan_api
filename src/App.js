@@ -1,6 +1,6 @@
 import React from 'react';
 import MiniScammer from './MiniScammer';
-import WhaleFollower from './WhaleFollower'
+import WhaleFollower from './WhaleFollower';
 import Test from './Test'
 import {
     BrowserRouter as Router,
@@ -22,7 +22,7 @@ export default function Start() {
                     </li>
                     <li>
                         <Link to="/whale-follower">Whale Follower</Link>
-                    </li>
+                    </li>                  
                     <li>
                         <Link to="/test">Test</Link>
                     </li>                    
@@ -37,7 +37,7 @@ export default function Start() {
                     </Route>
                     <Route path="/whale-follower">
                         <WhaleFollower />
-                    </Route>
+                    </Route>                   
                     <Route path="/test">
                         <Test />
                     </Route>                    

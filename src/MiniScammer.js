@@ -8,29 +8,14 @@ import ListItem from '@material-ui/core/ListItem';
 import Container from '@material-ui/core/Container';
 import ListItemText from '@material-ui/core/ListItemText';
 
-const useStyles = makeStyles((theme) => ({
-  root: {
-    '& > *': {
-      margin: theme.spacing(1),
-      width: '96%',
-    },
-    flexGrow: 1,
-  },
-  paper: {
-    padding: theme.spacing(2),
-    textAlign: 'center',
-    color: theme.palette.text.secondary,
-  },
-  listbuy: {
-    color: 'green'
-  },
-  listsell: {
-    color: 'red'
-  }
+const useStyles = makeStyles((theme) =>({
+  root: theme.root,
+  link: theme.link,  
+  paper: theme.paper
 })); 
 
 console.log("MiniScrammer.js başlangıç");
-export default function MiniScammer() {
+export default function MiniScammer() { 
   const classes = useStyles();
 
   const [txns, settxns] = useState({});

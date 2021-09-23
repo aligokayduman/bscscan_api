@@ -1,12 +1,13 @@
 export const firebaseConfig = {
-    apiKey: "AIzaSyBKoIhJPF8ruGQOAC47l9u2w-z1LiSSMSo",
-    authDomain: "scrammershunter.firebaseapp.com",
-    databaseURL: "https://scrammershunter-default-rtdb.europe-west1.firebasedatabase.app",
-    projectId: "scrammershunter",
-    storageBucket: "scrammershunter.appspot.com",
-    messagingSenderId: "290934406897",
-    appId: "1:290934406897:web:7ea5dcc011815e1ef0b350"
-  };
+  apiKey: "AIzaSyCSFNmKAhBLFYS0J49e2sFBsmHG-bKF85I",
+  authDomain: "bscscanapi.firebaseapp.com",
+  databaseURL: "https://bscscanapi-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "bscscanapi",
+  storageBucket: "bscscanapi.appspot.com",
+  messagingSenderId: "347173101949",
+  appId: "1:347173101949:web:a48ea5dcf8635221e66c14"
+};
 
-export const BSC_API_KEY = 'YMH1CJZ4VMYFMAA841SU8TXXJETRZZ4R9B';
-export const PancakeAddress = '0x10ed43c718714eb63d5aa57b78b54704e256024e';  
+export const bscApiKey = 'YMH1CJZ4VMYFMAA841SU8TXXJETRZZ4R9B';
+export const PancakeAddress = '0x10ed43c718714eb63d5aa57b78b54704e256024e';
+export const BscBurnAddress = '0x10ed43c718714eb63d5aa57b78b54704e256024e';  
